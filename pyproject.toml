@@ -1,0 +1,14 @@
+[project]
+name = "contextclipper-backend"
+version = "0.1.0"
+description = "FastAPI backend for ContextClipper video overlay rendering"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"

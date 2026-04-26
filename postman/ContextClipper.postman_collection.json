@@ -1,0 +1,608 @@
+{
+  "info": {
+    "_postman_id": "7e63a045-2ce2-4f3a-91ce-contextclipper",
+    "name": "ContextClipper Backend API",
+    "description": "Postman collection untuk cek semua endpoint ContextClipper FastAPI. Jalankan request berurutan dari atas ke bawah agar variable seperti video_id, image_id, project_id, dan job_id otomatis terisi dari response.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "ws_base_url",
+      "value": "ws://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "video_id",
+      "value": "vid_replace_me",
+      "type": "string"
+    },
+    {
+      "key": "image_id",
+      "value": "img_replace_me",
+      "type": "string"
+    },
+    {
+      "key": "project_id",
+      "value": "prj_replace_me",
+      "type": "string"
+    },
+    {
+      "key": "job_id",
+      "value": "job_replace_me",
+      "type": "string"
+    },
+    {
+      "key": "video_file_path",
+      "value": "/absolute/path/to/source-video.mp4",
+      "type": "string"
+    },
+    {
+      "key": "image_file_path",
+      "value": "/absolute/path/to/context-image.png",
+      "type": "string"
+    },
+    {
+      "key": "project_name",
+      "value": "Episode 31 - segmen Tan Malaka",
+      "type": "string"
+    },
+    {
+      "key": "thumbnail_time",
+      "value": "2.5",
+      "type": "string"
+    },
+    {
+      "key": "preview_timestamp",
+      "value": "1.5",
+      "type": "string"
+    },
+    {
+      "key": "base64_image",
+      "value": "data:image/png;base64,REPLACE_ME",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/health",
+            "description": "Cek server hidup."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('health ok', function () { pm.expect(pm.response.json().status).to.eql('ok'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Videos",
+      "item": [
+        {
+          "name": "POST /api/videos - upload file",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "{{video_file_path}}"
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/videos",
+            "description": "Upload video source. Ganti collection variable video_file_path ke path lokal video."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('has video_id', function () { pm.expect(json.video_id).to.be.a('string'); });",
+                  "pm.collectionVariables.set('video_id', json.video_id);",
+                  "pm.collectionVariables.set('video_width', json.meta.width);",
+                  "pm.collectionVariables.set('video_height', json.meta.height);",
+                  "pm.collectionVariables.set('video_duration_sec', json.meta.duration_sec);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/videos - register disk path",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "path",
+                  "value": "{{video_file_path}}",
+                  "type": "text"
+                },
+                {
+                  "key": "filename",
+                  "value": "registered-source.mp4",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/videos",
+            "description": "Register/copy video dari path lokal yang sudah ada di disk server."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('video_id', json.video_id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/videos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/videos",
+            "description": "List video yang tersedia."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('returns array', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/videos/{{video_id}}/thumbnail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/videos/{{video_id}}/thumbnail?t={{thumbnail_time}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "videos",
+                "{{video_id}}",
+                "thumbnail"
+              ],
+              "query": [
+                {
+                  "key": "t",
+                  "value": "{{thumbnail_time}}"
+                }
+              ]
+            },
+            "description": "Ambil JPEG thumbnail pada timestamp tertentu."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('content-type image/jpeg', function () { pm.expect(pm.response.headers.get('content-type')).to.include('image/jpeg'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Images",
+      "item": [
+        {
+          "name": "POST /api/images - upload file",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "{{image_file_path}}"
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/images",
+            "description": "Upload gambar konteks. Ganti collection variable image_file_path ke path lokal image."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('has image_id', function () { pm.expect(json.image_id).to.be.a('string'); });",
+                  "pm.collectionVariables.set('image_id', json.image_id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/images - base64 clipboard",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "base64_image",
+                  "value": "{{base64_image}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/images",
+            "description": "Upload image dari base64 paste. Ganti variable base64_image dengan data URL valid."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('image_id', json.image_id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/images",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/images",
+            "description": "List image library."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('returns array', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/images/{{image_id}}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/images/{{image_id}}",
+            "description": "Serve file image by image_id."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('returns image content-type', function () { pm.expect(pm.response.headers.get('content-type')).to.match(/^image\\//); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /api/images/{{image_id}}",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/api/images/{{image_id}}",
+            "description": "Soft delete image. Sebaiknya jalankan hanya untuk image test yang tidak dipakai project."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('deleted', function () { pm.expect(pm.response.json().status).to.eql('deleted'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "POST /api/projects",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"video_id\": \"{{video_id}}\",\n  \"name\": \"{{project_name}}\"\n}"
+            },
+            "url": "{{base_url}}/api/projects",
+            "description": "Buat project baru dari video_id."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('has project_id', function () { pm.expect(json.project_id).to.be.a('string'); });",
+                  "pm.collectionVariables.set('project_id', json.project_id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/projects",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/projects",
+            "description": "List projects."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('returns array', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/projects/{{project_id}}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/projects/{{project_id}}",
+            "description": "Get full project JSON."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('project_id matches', function () { pm.expect(pm.response.json().project_id).to.eql(pm.collectionVariables.get('project_id')); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /api/projects/{{project_id}} - update timeline",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{project_name}}\",\n  \"layout\": {\n    \"image_area_ratio\": 0.30,\n    \"image_position\": \"bottom\",\n    \"image_fit\": \"cover\",\n    \"background_color\": \"#000000\"\n  },\n  \"click_sound\": {\n    \"enabled\": true,\n    \"asset\": \"click_default\",\n    \"volume\": 0.6,\n    \"trigger\": \"on_image_start\"\n  },\n  \"tracks\": [\n    {\n      \"id\": \"trk_001\",\n      \"image_id\": \"{{image_id}}\",\n      \"start_sec\": 0.0,\n      \"end_sec\": 4.5,\n      \"fit_override\": null\n    },\n    {\n      \"id\": \"trk_002\",\n      \"image_id\": \"{{image_id}}\",\n      \"start_sec\": 4.5,\n      \"end_sec\": 9.0,\n      \"fit_override\": null\n    }\n  ]\n}"
+            },
+            "url": "{{base_url}}/api/projects/{{project_id}}",
+            "description": "Update timeline project. Tracks boleh overlap, tapi body contoh dibuat non-overlap."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('tracks saved', function () { pm.expect(json.tracks).to.have.length.above(0); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preview",
+      "item": [
+        {
+          "name": "POST /api/preview",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"video_id\": \"{{video_id}}\",\n  \"timestamp\": {{preview_timestamp}},\n  \"overlay\": {\n    \"image_id\": \"{{image_id}}\",\n    \"fit\": \"cover\"\n  }\n}"
+            },
+            "url": "{{base_url}}/api/preview",
+            "description": "Generate composite JPEG satu frame."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('content-type image/jpeg', function () { pm.expect(pm.response.headers.get('content-type')).to.include('image/jpeg'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Render",
+      "item": [
+        {
+          "name": "POST /api/render",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"project_id\": \"{{project_id}}\"\n}"
+            },
+            "url": "{{base_url}}/api/render",
+            "description": "Start render job. Response menyimpan job_id ke collection variable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('has job_id', function () { pm.expect(json.job_id).to.be.a('string'); });",
+                  "pm.collectionVariables.set('job_id', json.job_id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/render/{{job_id}}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/render/{{job_id}}",
+            "description": "Poll status render: queued, running, done, atau error."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('has valid status', function () { pm.expect(['queued', 'running', 'done', 'error']).to.include(json.status); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/render/{{job_id}}/download",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/render/{{job_id}}/download",
+            "description": "Download MP4 output. Jalankan setelah status render done."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200 when done', function () { pm.response.to.have.status(200); });",
+                  "pm.test('content-type video/mp4', function () { pm.expect(pm.response.headers.get('content-type')).to.include('video/mp4'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WebSocket",
+      "item": [
+        {
+          "name": "WS /ws/render/{{job_id}}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{ws_base_url}}/ws/render/{{job_id}}",
+            "description": "Endpoint WebSocket render log. Di Postman, buka New > WebSocket Request lalu pakai URL ini: {{ws_base_url}}/ws/render/{{job_id}}"
+          }
+        }
+      ]
+    }
+  ]
+}
+
