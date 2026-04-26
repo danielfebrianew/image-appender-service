@@ -245,5 +245,57 @@
       "fps": 60.0
     },
     "created_at": "2026-04-25T22:59:22.680389Z"
+  },
+  {
+    "video_id": "vid_bbfb729c21bd",
+    "filename": "MU_Peringkat_3_Udah_Dipanggil_King_CoachJustin_MU_KingMU.mp4",
+    "path": "data/uploads/videos/vid_bbfb729c21bd.mp4",
+    "meta": {
+      "path": "data/uploads/videos/vid_bbfb729c21bd.mp4",
+      "duration_sec": 40.0,
+      "width": 606,
+      "height": 1080,
+      "fps": 60.0
+    },
+    "created_at": "2026-04-26T06:34:59.404302Z"
+  },
+  {
+    "video_id": "vid_b3299b2ddfc0",
+    "filename": "Efek_Ronaldo_di_MU_Merusak_Keseimbangan_Tim_Ronaldo_MU_CoachJustin.mp4",
+    "path": "data/uploads/videos/vid_b3299b2ddfc0.mp4",
+    "meta": {
+      "path": "data/uploads/videos/vid_b3299b2ddfc0.mp4",
+      "duration_sec": 36.383984,
+      "width": 606,
+      "height": 1080,
+      "fps": 60.0
+    },
+    "created_at": "2026-04-26T06:35:03.418462Z"
+  },
+  {
+    "video_id": "vid_21fb0077d17b",
+    "filename": "MU_Peringkat_3_Udah_Dipanggil_King_CoachJustin_MU_KingMU.mp4",
+    "path": "data/uploads/videos/vid_21fb0077d17b.mp4",
+    "meta": {
+      "path": "data/uploads/videos/vid_21fb0077d17b.mp4",
+      "duration_sec": 40.0,
+      "width": 606,
+      "height": 1080,
+      "fps": 60.0
+    },
+    "created_at": "2026-04-26T06:56:32.420464Z"
+  },
+  {
+    "video_id": "vid_5d12cd01de91",
+    "filename": "Arteta_Pindah_ke_City_Bakal_Ngeri_Arteta_ManCity_CoachJustin.mp4",
+    "path": "data/uploads/videos/vid_5d12cd01de91.mp4",
+    "meta": {
+      "path": "data/uploads/videos/vid_5d12cd01de91.mp4",
+      "duration_sec": 40.016667,
+      "width": 606,
+      "height": 1080,
+      "fps": 60.0
+    },
+    "created_at": "2026-04-26T12:14:25.827711Z"
   }
 ]

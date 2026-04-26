@@ -518,5 +518,145 @@
     "height": 294,
     "deleted": false,
     "created_at": "2026-04-25T23:25:02.268745Z"
+  },
+  {
+    "image_id": "img_23602d3c0f70",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_23602d3c0f70.png",
+    "url": "/api/images/img_23602d3c0f70",
+    "width": 1062,
+    "height": 510,
+    "deleted": false,
+    "created_at": "2026-04-26T06:38:38.967372Z"
+  },
+  {
+    "image_id": "img_496bdfa0b9ba",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_496bdfa0b9ba.png",
+    "url": "/api/images/img_496bdfa0b9ba",
+    "width": 1870,
+    "height": 886,
+    "deleted": false,
+    "created_at": "2026-04-26T06:39:24.530621Z"
+  },
+  {
+    "image_id": "img_7d8757e1f90d",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_7d8757e1f90d.png",
+    "url": "/api/images/img_7d8757e1f90d",
+    "width": 814,
+    "height": 386,
+    "deleted": false,
+    "created_at": "2026-04-26T06:40:12.039761Z"
+  },
+  {
+    "image_id": "img_2f768b9f627b",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_2f768b9f627b.png",
+    "url": "/api/images/img_2f768b9f627b",
+    "width": 1026,
+    "height": 518,
+    "deleted": false,
+    "created_at": "2026-04-26T06:40:46.480069Z"
+  },
+  {
+    "image_id": "img_425989485629",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_425989485629.png",
+    "url": "/api/images/img_425989485629",
+    "width": 594,
+    "height": 294,
+    "deleted": false,
+    "created_at": "2026-04-26T06:57:04.041214Z"
+  },
+  {
+    "image_id": "img_0665a855fc60",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_0665a855fc60.png",
+    "url": "/api/images/img_0665a855fc60",
+    "width": 774,
+    "height": 390,
+    "deleted": false,
+    "created_at": "2026-04-26T06:57:20.912604Z"
+  },
+  {
+    "image_id": "img_42f9a647e128",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_42f9a647e128.png",
+    "url": "/api/images/img_42f9a647e128",
+    "width": 762,
+    "height": 350,
+    "deleted": false,
+    "created_at": "2026-04-26T06:57:31.911771Z"
+  },
+  {
+    "image_id": "img_a30017d65c5f",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_a30017d65c5f.png",
+    "url": "/api/images/img_a30017d65c5f",
+    "width": 882,
+    "height": 394,
+    "deleted": false,
+    "created_at": "2026-04-26T06:58:12.952827Z"
+  },
+  {
+    "image_id": "img_0534f6b7da4d",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_0534f6b7da4d.png",
+    "url": "/api/images/img_0534f6b7da4d",
+    "width": 866,
+    "height": 490,
+    "deleted": false,
+    "created_at": "2026-04-26T06:59:08.979527Z"
+  },
+  {
+    "image_id": "img_6bb52049d5c2",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_6bb52049d5c2.png",
+    "url": "/api/images/img_6bb52049d5c2",
+    "width": 730,
+    "height": 370,
+    "deleted": false,
+    "created_at": "2026-04-26T06:59:52.767200Z"
+  },
+  {
+    "image_id": "img_ed1725f76b3d",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_ed1725f76b3d.png",
+    "url": "/api/images/img_ed1725f76b3d",
+    "width": 814,
+    "height": 430,
+    "deleted": false,
+    "created_at": "2026-04-26T07:00:46.966761Z"
+  },
+  {
+    "image_id": "img_4452b102dc0e",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_4452b102dc0e.png",
+    "url": "/api/images/img_4452b102dc0e",
+    "width": 846,
+    "height": 482,
+    "deleted": false,
+    "created_at": "2026-04-26T12:16:45.282573Z"
+  },
+  {
+    "image_id": "img_5d17bf5d829c",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_5d17bf5d829c.png",
+    "url": "/api/images/img_5d17bf5d829c",
+    "width": 790,
+    "height": 438,
+    "deleted": false,
+    "created_at": "2026-04-26T12:17:31.655319Z"
+  },
+  {
+    "image_id": "img_b37fbc2d3172",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_b37fbc2d3172.png",
+    "url": "/api/images/img_b37fbc2d3172",
+    "width": 1038,
+    "height": 502,
+    "deleted": false,
+    "created_at": "2026-04-26T12:20:08.583347Z"
   }
 ]

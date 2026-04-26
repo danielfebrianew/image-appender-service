@@ -28,6 +28,7 @@ from app.media import (
     save_base64_image,
 )
 from app.models import (
+    AddTrackRequest,
     Cover,
     CreateProjectRequest,
     ImageRecord,
@@ -35,6 +36,7 @@ from app.models import (
     Project,
     RegisterVideoRequest,
     RenderRequest,
+    Track,
     UpdateProjectRequest,
     VideoRecord,
 )
@@ -230,7 +232,10 @@ def update_project(
             update_values.get("video_meta", project.video_meta).duration_sec
         )
         for track in request.tracks or []:
-            get_image(settings, track.image_id)
+            if track.video_id is not None:
+                get_video(settings, track.video_id)
+            elif track.image_id is not None:
+                get_image(settings, track.image_id)
             if track.end_sec > new_duration:
                 raise HTTPException(
                     status_code=422,
@@ -239,6 +244,42 @@ def update_project(
         update_values["tracks"] = request.tracks
 
     updated = project.model_copy(update={**update_values, "updated_at": utc_now()})
+    save_project(settings, updated)
+    return updated
+
+
+@app.post("/api/projects/{project_id}/tracks", response_model=Project)
+def add_track(
+    project_id: str,
+    request: AddTrackRequest,
+    settings: Settings = Depends(get_settings),
+) -> Project:
+    project = get_project(settings, project_id)
+    if request.video_id is not None:
+        video_overlay = get_video(settings, request.video_id)
+        if request.end_sec > video_overlay.meta.duration_sec:
+            raise HTTPException(
+                status_code=422,
+                detail="end_sec exceeds overlay video duration",
+            )
+    else:
+        get_image(settings, request.image_id)  # type: ignore[arg-type]
+    if request.end_sec > project.video_meta.duration_sec:
+        raise HTTPException(
+            status_code=422,
+            detail="end_sec exceeds project video duration",
+        )
+    track = Track(
+        id=new_id("trk"),
+        image_id=request.image_id,
+        video_id=request.video_id,
+        start_sec=request.start_sec,
+        end_sec=request.end_sec,
+        fit_override=request.fit_override,
+    )
+    updated = project.model_copy(
+        update={"tracks": [*project.tracks, track], "updated_at": utc_now()}
+    )
     save_project(settings, updated)
     return updated
 

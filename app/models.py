@@ -66,15 +66,20 @@ class ClickSound(BaseModel):
 
 class Track(BaseModel):
     id: str
-    image_id: str
+    image_id: str | None = None
+    video_id: str | None = None
     start_sec: float = Field(ge=0)
     end_sec: float = Field(gt=0)
     fit_override: FitMode | None = None
 
     @model_validator(mode="after")
-    def validate_time_order(self) -> "Track":
+    def validate_track(self) -> "Track":
         if self.end_sec <= self.start_sec:
             raise ValueError("end_sec must be greater than start_sec")
+        if self.image_id is None and self.video_id is None:
+            raise ValueError("track must have either image_id or video_id")
+        if self.image_id is not None and self.video_id is not None:
+            raise ValueError("track cannot have both image_id and video_id")
         return self
 
 
@@ -111,6 +116,24 @@ class UpdateProjectRequest(BaseModel):
     click_sound: ClickSound | None = None
     tracks: list[Track] | None = None
     cover: Cover | None = None
+
+
+class AddTrackRequest(BaseModel):
+    image_id: str | None = None
+    video_id: str | None = None
+    start_sec: float = Field(ge=0)
+    end_sec: float = Field(gt=0)
+    fit_override: FitMode | None = None
+
+    @model_validator(mode="after")
+    def validate_source(self) -> "AddTrackRequest":
+        if self.image_id is None and self.video_id is None:
+            raise ValueError("must provide either image_id or video_id")
+        if self.image_id is not None and self.video_id is not None:
+            raise ValueError("cannot provide both image_id and video_id")
+        if self.end_sec <= self.start_sec:
+            raise ValueError("end_sec must be greater than start_sec")
+        return self
 
 
 class RegisterVideoRequest(BaseModel):

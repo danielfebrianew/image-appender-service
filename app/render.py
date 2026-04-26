@@ -7,7 +7,7 @@ from pathlib import Path
 from app.config import Settings
 from app.jobs import JobManager
 from app.models import FitMode, JobStatus, Project, Track
-from app.storage import get_image, get_project
+from app.storage import get_image, get_project, get_video
 
 
 def ffmpeg_time_escape(value: float) -> str:
@@ -211,8 +211,16 @@ async def render_overlay_segment(
     ]
 
     for track in seg.tracks:
-        image = get_image(settings, track.image_id)
-        args.extend(["-loop", "1", "-t", ffmpeg_time_escape(dur), "-i", str(image.path)])
+        if track.video_id is not None:
+            video_overlay = get_video(settings, track.video_id)
+            args.extend([
+                "-ss", ffmpeg_time_escape(seg.start),
+                "-t", ffmpeg_time_escape(dur),
+                "-i", str(video_overlay.path),
+            ])
+        else:
+            image = get_image(settings, track.image_id)  # type: ignore[arg-type]
+            args.extend(["-loop", "1", "-t", ffmpeg_time_escape(dur), "-i", str(image.path)])
 
     if use_click:
         args.extend(["-i", str(click_path)])
@@ -292,10 +300,8 @@ async def run_render_job(settings: Settings, manager: JobManager, job_id: str) -
         duration = project.video_meta.duration_sec
         output = settings.output_dir / f"{job_id}.mp4"
         tracks = normalize_tracks(project)
-        has_cover = project.cover is not None
-
         cover_path: Path | None = None
-        if has_cover:
+        if project.cover is not None:
             cover_path = tmp_dir / "cover.mp4"
             await manager.log(job_id, f"Rendering cover ({project.cover.duration_sec}s)...")
             code = await render_cover_segment(settings, project, cover_path, manager, job_id, duration)
@@ -304,7 +310,7 @@ async def run_render_job(settings: Settings, manager: JobManager, job_id: str) -
                 return
 
         if not tracks:
-            if not has_cover:
+            if cover_path is None:
                 await manager.log(job_id, "No tracks; copying stream directly.")
                 code = await run_ffmpeg(settings, [
                     "-i", str(source), "-map", "0", "-c", "copy",
@@ -364,7 +370,7 @@ async def run_render_job(settings: Settings, manager: JobManager, job_id: str) -
             code = await concat_with_stream_copy(
                 settings, seg_paths, output, tmp_dir, manager, job_id, duration,
             )
-            if code != 0 and has_cover:
+            if code != 0 and cover_path is not None:
                 await manager.log(
                     job_id,
                     f"fast concat failed (code {code}); falling back to re-encode.",
@@ -393,7 +399,10 @@ async def validate_project_assets(
 ) -> None:
     seen_end = -1.0
     for track in project.tracks:
-        get_image(settings, track.image_id)
+        if track.video_id is not None:
+            get_video(settings, track.video_id)
+        else:
+            get_image(settings, track.image_id)  # type: ignore[arg-type]
         if track.start_sec < seen_end:
             await manager.log(job_id, "Track overlap detected; later tracks render above earlier tracks.", "warn")
         if track.end_sec > project.video_meta.duration_sec:
