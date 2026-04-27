@@ -195,7 +195,7 @@ async def render_overlay_segment(
     dur = seg.end - seg.start
     codec = detect_codec(settings)
 
-    click_path = settings.click_default
+    click_path = settings.click_asset
     use_click = project.click_sound.enabled and click_path.exists()
     if project.click_sound.enabled and not click_path.exists():
         await manager.log(

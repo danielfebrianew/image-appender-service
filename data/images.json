@@ -1068,5 +1068,115 @@
     "height": 910,
     "deleted": false,
     "created_at": "2026-04-27T13:35:25.842313Z"
+  },
+  {
+    "image_id": "img_bab667c290b2",
+    "filename": "WhatsApp Image 2026-04-27 at 21.11.23.jpeg",
+    "path": "data/uploads/images/img_bab667c290b2.jpeg",
+    "url": "/api/images/img_bab667c290b2",
+    "width": 828,
+    "height": 922,
+    "deleted": false,
+    "created_at": "2026-04-27T14:11:57.872619Z"
+  },
+  {
+    "image_id": "img_97afc455741f",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_97afc455741f.png",
+    "url": "/api/images/img_97afc455741f",
+    "width": 874,
+    "height": 446,
+    "deleted": false,
+    "created_at": "2026-04-27T14:12:23.832395Z"
+  },
+  {
+    "image_id": "img_5f89ecdb06f7",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_5f89ecdb06f7.png",
+    "url": "/api/images/img_5f89ecdb06f7",
+    "width": 978,
+    "height": 478,
+    "deleted": false,
+    "created_at": "2026-04-27T14:12:43.246295Z"
+  },
+  {
+    "image_id": "img_4b9186decc2a",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_4b9186decc2a.png",
+    "url": "/api/images/img_4b9186decc2a",
+    "width": 1070,
+    "height": 486,
+    "deleted": false,
+    "created_at": "2026-04-27T14:13:18.169440Z"
+  },
+  {
+    "image_id": "img_41e306122b26",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_41e306122b26.png",
+    "url": "/api/images/img_41e306122b26",
+    "width": 814,
+    "height": 458,
+    "deleted": false,
+    "created_at": "2026-04-27T14:13:48.777515Z"
+  },
+  {
+    "image_id": "img_e47ccb448ddf",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_e47ccb448ddf.png",
+    "url": "/api/images/img_e47ccb448ddf",
+    "width": 650,
+    "height": 434,
+    "deleted": false,
+    "created_at": "2026-04-27T14:14:19.592108Z"
+  },
+  {
+    "image_id": "img_300cb86c05d2",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_300cb86c05d2.png",
+    "url": "/api/images/img_300cb86c05d2",
+    "width": 862,
+    "height": 542,
+    "deleted": false,
+    "created_at": "2026-04-27T14:47:51.124881Z"
+  },
+  {
+    "image_id": "img_3796002c205d",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_3796002c205d.png",
+    "url": "/api/images/img_3796002c205d",
+    "width": 782,
+    "height": 370,
+    "deleted": false,
+    "created_at": "2026-04-27T14:48:06.585263Z"
+  },
+  {
+    "image_id": "img_53e88a7e263f",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_53e88a7e263f.png",
+    "url": "/api/images/img_53e88a7e263f",
+    "width": 786,
+    "height": 406,
+    "deleted": false,
+    "created_at": "2026-04-27T14:48:34.088110Z"
+  },
+  {
+    "image_id": "img_7afc6274e754",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_7afc6274e754.png",
+    "url": "/api/images/img_7afc6274e754",
+    "width": 818,
+    "height": 450,
+    "deleted": false,
+    "created_at": "2026-04-27T14:49:01.241036Z"
+  },
+  {
+    "image_id": "img_c5649bb5ccf1",
+    "filename": "image.png",
+    "path": "data/uploads/images/img_c5649bb5ccf1.png",
+    "url": "/api/images/img_c5649bb5ccf1",
+    "width": 654,
+    "height": 406,
+    "deleted": false,
+    "created_at": "2026-04-27T14:49:35.244069Z"
   }
 ]

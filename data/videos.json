@@ -115,5 +115,31 @@
       "fps": 60.0
     },
     "created_at": "2026-04-27T13:28:25.150763Z"
+  },
+  {
+    "video_id": "vid_54595dfceec5",
+    "filename": "Carrick_permanen_di_MU_Tergantung_tiket_UCL_nih_MUFC_MichaelCarrick_ManUnited_UCL.mp4",
+    "path": "data/uploads/videos/vid_54595dfceec5.mp4",
+    "meta": {
+      "path": "data/uploads/videos/vid_54595dfceec5.mp4",
+      "duration_sec": 45.000331,
+      "width": 606,
+      "height": 1080,
+      "fps": 59.999559147685524
+    },
+    "created_at": "2026-04-27T14:09:42.351768Z"
+  },
+  {
+    "video_id": "vid_f7dbc3f2464c",
+    "filename": "Manajemen_Chelsea_Buang_Duit_ke_Sampah_Mudryk_Kontrak_6_Tahun_Dikuliti_CoachJustin_ChelseaFC.mp4",
+    "path": "data/uploads/videos/vid_f7dbc3f2464c.mp4",
+    "meta": {
+      "path": "data/uploads/videos/vid_f7dbc3f2464c.mp4",
+      "duration_sec": 50.000328,
+      "width": 606,
+      "height": 1080,
+      "fps": 59.999606040709125
+    },
+    "created_at": "2026-04-27T14:47:03.532285Z"
   }
 ]

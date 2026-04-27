@@ -13,10 +13,16 @@ class Settings(BaseSettings):
     ffprobe_path: str = Field(default="ffprobe", alias="CONTEXTCLIPPER_FFPROBE_PATH")
     video_codec: str = Field(default="h264_videotoolbox", alias="CONTEXTCLIPPER_VIDEO_CODEC")
     max_render_concurrent: int = Field(default=1, alias="CONTEXTCLIPPER_MAX_RENDER_CONCURRENT")
-    click_default: Path = Field(default=Path("assets/click.mp3"), alias="CONTEXTCLIPPER_CLICK_DEFAULT")
+    click_default: Path | None = Field(default=None, alias="CONTEXTCLIPPER_CLICK_DEFAULT")
     cors_origins: str = Field(
         default="http://localhost:3000", alias="CONTEXTCLIPPER_CORS_ORIGINS"
     )
+
+    @property
+    def click_asset(self) -> Path:
+        if self.click_default is not None:
+            return self.click_default
+        return Path(__file__).parent / "assets" / "click.mp3"
 
     @property
     def upload_video_dir(self) -> Path:
