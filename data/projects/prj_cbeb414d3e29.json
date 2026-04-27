@@ -1,10 +1,10 @@
 {
   "project_id": "prj_cbeb414d3e29",
-  "name": "edited_Arteta_Pindah_ke_City_Bakal_Ngeri_Arteta_ManCity_CoachJustin_564f",
-  "video_id": "vid_5d12cd01de91",
+  "name": "edited_ARSENAL_MENTAL_TEMPE_Coach_Justin_Ngamuk_Arsenal_CoachJustin_Arteta_572a",
+  "video_id": "vid_3116dc661d1a",
   "video_meta": {
-    "path": "data/uploads/videos/vid_5d12cd01de91.mp4",
-    "duration_sec": 40.016667,
+    "path": "data/uploads/videos/vid_3116dc661d1a.mp4",
+    "duration_sec": 25.0,
     "width": 606,
     "height": 1080,
     "fps": 60.0
@@ -23,34 +23,49 @@
   },
   "tracks": [
     {
-      "id": "f904904e-4376-412c-b6ef-eca8ea4b0c0d",
-      "image_id": "img_4452b102dc0e",
+      "id": "7fe600f8-843d-43f7-8e3b-4595bed77759",
+      "image_id": "img_3d2d372d6059",
+      "video_id": null,
       "start_sec": 0.0,
-      "end_sec": 7.929965,
+      "end_sec": 6.1000000000000005,
+      "trim_start_sec": 0.0,
       "fit_override": "cover"
     },
     {
-      "id": "b33abbee-3e7b-4a3e-96d0-ebcdadba2e49",
-      "image_id": "img_5d17bf5d829c",
-      "start_sec": 7.929965,
-      "end_sec": 21.400000000000002,
+      "id": "d17cc4f9-9421-4e6b-aa98-f07fbce782f6",
+      "image_id": "img_9df4ad8c929a",
+      "video_id": null,
+      "start_sec": 6.1000000000000005,
+      "end_sec": 13.200000000000001,
+      "trim_start_sec": 0.0,
       "fit_override": "cover"
     },
     {
-      "id": "f07121d2-9986-4947-ab81-720db62ea187",
-      "image_id": "img_b37fbc2d3172",
-      "start_sec": 21.400000000000002,
-      "end_sec": 29.700000000000003,
+      "id": "8ae1004e-5c2d-4ac9-b1e0-3e71a9acce81",
+      "image_id": "img_b812e233ba01",
+      "video_id": null,
+      "start_sec": 13.200000000000001,
+      "end_sec": 20.0,
+      "trim_start_sec": 0.0,
+      "fit_override": "cover"
+    },
+    {
+      "id": "226cc2ea-c54f-4187-a7f8-0513b8cc01bc",
+      "image_id": "img_a05f5259e958",
+      "video_id": null,
+      "start_sec": 19.900000000000002,
+      "end_sec": 25.0,
+      "trim_start_sec": 0.0,
       "fit_override": "cover"
     }
   ],
   "cover": {
-    "path": "data/uploads/covers/cov_ca5cfba82bfc.png",
-    "filename": "ChatGPT Image 26 Apr 2026, 13.56.00.png",
+    "path": "data/uploads/covers/cov_ff75a194dbae.png",
+    "filename": "ChatGPT Image 26 Apr 2026, 20.41.56.png",
     "width": 1024,
     "height": 1536,
     "duration_sec": 0.5
   },
   "created_at": "2026-04-25T22:47:41.448794Z",
-  "updated_at": "2026-04-26T12:20:13.387844Z"
+  "updated_at": "2026-04-26T13:42:07.839655Z"
 }

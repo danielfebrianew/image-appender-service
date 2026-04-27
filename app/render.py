@@ -213,8 +213,11 @@ async def render_overlay_segment(
     for track in seg.tracks:
         if track.video_id is not None:
             video_overlay = get_video(settings, track.video_id)
+            # trim_start_sec = offset into the overlay video where this segment starts
+            # seg.start - track.start_sec = how far into the track this segment is
+            trim_offset = track.trim_start_sec + (seg.start - track.start_sec)
             args.extend([
-                "-ss", ffmpeg_time_escape(seg.start),
+                "-ss", ffmpeg_time_escape(max(0.0, trim_offset)),
                 "-t", ffmpeg_time_escape(dur),
                 "-i", str(video_overlay.path),
             ])
@@ -400,7 +403,15 @@ async def validate_project_assets(
     seen_end = -1.0
     for track in project.tracks:
         if track.video_id is not None:
-            get_video(settings, track.video_id)
+            video_overlay = get_video(settings, track.video_id)
+            clip_duration = track.end_sec - track.start_sec
+            if track.trim_start_sec + clip_duration > video_overlay.meta.duration_sec:
+                await manager.log(
+                    job_id,
+                    f"Track {track.id} trim_start_sec ({track.trim_start_sec:.3f}s) + clip duration ({clip_duration:.3f}s) "
+                    f"exceeds overlay video duration ({video_overlay.meta.duration_sec:.3f}s); will loop/freeze at end.",
+                    "warn",
+                )
         else:
             get_image(settings, track.image_id)  # type: ignore[arg-type]
         if track.start_sec < seen_end:

@@ -115,6 +115,12 @@ def videos(settings: Settings = Depends(get_settings)) -> list[VideoRecord]:
     return list_videos(settings)
 
 
+@app.get("/api/videos/{video_id}/stream")
+def video_stream(video_id: str, settings: Settings = Depends(get_settings)) -> FileResponse:
+    video = get_video(settings, video_id)
+    return FileResponse(video.path, media_type="video/mp4")
+
+
 @app.get("/api/videos/{video_id}/thumbnail")
 def video_thumbnail(
     video_id: str, t: float = 2.5, settings: Settings = Depends(get_settings)
@@ -124,6 +130,20 @@ def video_thumbnail(
     if not ok:
         raise HTTPException(status_code=400, detail="could not extract thumbnail")
     return Response(content=jpeg_bytes_from_frame(frame), media_type="image/jpeg")
+
+
+@app.delete("/api/videos/{video_id}")
+def delete_video(video_id: str, settings: Settings = Depends(get_settings)) -> dict[str, str]:
+    records = list_videos(settings)
+    for idx, record in enumerate(records):
+        if record.video_id == video_id:
+            path = Path(record.path)
+            if path.exists():
+                path.unlink(missing_ok=True)
+            records.pop(idx)
+            save_videos(settings, records)
+            return {"status": "deleted"}
+    raise HTTPException(status_code=404, detail="video not found")
 
 
 @app.post("/api/images", response_model=ImageRecord)
@@ -233,7 +253,13 @@ def update_project(
         )
         for track in request.tracks or []:
             if track.video_id is not None:
-                get_video(settings, track.video_id)
+                video_overlay = get_video(settings, track.video_id)
+                clip_duration = track.end_sec - track.start_sec
+                if track.trim_start_sec + clip_duration > video_overlay.meta.duration_sec:
+                    raise HTTPException(
+                        status_code=422,
+                        detail=f"track {track.id} trim_start_sec + clip duration exceeds overlay video duration",
+                    )
             elif track.image_id is not None:
                 get_image(settings, track.image_id)
             if track.end_sec > new_duration:
@@ -257,10 +283,11 @@ def add_track(
     project = get_project(settings, project_id)
     if request.video_id is not None:
         video_overlay = get_video(settings, request.video_id)
-        if request.end_sec > video_overlay.meta.duration_sec:
+        clip_duration = request.end_sec - request.start_sec
+        if request.trim_start_sec + clip_duration > video_overlay.meta.duration_sec:
             raise HTTPException(
                 status_code=422,
-                detail="end_sec exceeds overlay video duration",
+                detail="trim_start_sec + clip duration exceeds overlay video duration",
             )
     else:
         get_image(settings, request.image_id)  # type: ignore[arg-type]
@@ -275,6 +302,7 @@ def add_track(
         video_id=request.video_id,
         start_sec=request.start_sec,
         end_sec=request.end_sec,
+        trim_start_sec=request.trim_start_sec,
         fit_override=request.fit_override,
     )
     updated = project.model_copy(

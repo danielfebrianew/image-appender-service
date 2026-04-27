@@ -70,6 +70,7 @@ class Track(BaseModel):
     video_id: str | None = None
     start_sec: float = Field(ge=0)
     end_sec: float = Field(gt=0)
+    trim_start_sec: float = Field(default=0.0, ge=0)
     fit_override: FitMode | None = None
 
     @model_validator(mode="after")
@@ -123,6 +124,7 @@ class AddTrackRequest(BaseModel):
     video_id: str | None = None
     start_sec: float = Field(ge=0)
     end_sec: float = Field(gt=0)
+    trim_start_sec: float = Field(default=0.0, ge=0)
     fit_override: FitMode | None = None
 
     @model_validator(mode="after")
