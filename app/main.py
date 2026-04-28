@@ -32,6 +32,7 @@ from app.media import (
 from app.models import (
     AddTrackRequest,
     Cover,
+    CoverRecord,
     CreateProjectRequest,
     ImageRecord,
     PreviewRequest,
@@ -196,17 +197,67 @@ def delete_image(image_id: str, db: Session = Depends(get_session)) -> dict[str,
     return {"status": "deleted"}
 
 
+@app.post("/api/covers", response_model=CoverRecord)
+async def upload_cover(
+    file: UploadFile | None = File(default=None),
+    base64_image: str | None = Form(default=None),
+    settings: Settings = Depends(get_settings),
+) -> CoverRecord:
+    if file is None and not base64_image:
+        raise HTTPException(status_code=400, detail="send multipart file or base64_image form field")
+
+    if file is not None:
+        cover_id, destination = await save_upload(file, settings.upload_cover_dir, "cov")
+        display_name = file.filename or destination.name
+    else:
+        cover_id = new_id("cov")
+        destination = save_base64_image(base64_image or "", settings.upload_cover_dir, cover_id)
+        display_name = destination.name
+
+    width, height = inspect_image(destination)
+    return CoverRecord(
+        cover_id=cover_id,
+        filename=display_name,
+        path=str(destination),
+        url=f"/api/covers/{cover_id}",
+        width=width,
+        height=height,
+    )
+
+
+@app.get("/api/covers/{cover_id}")
+def cover_file(cover_id: str, settings: Settings = Depends(get_settings)) -> FileResponse:
+    candidates = list(Path(settings.upload_cover_dir).glob(f"{cover_id}.*"))
+    if not candidates:
+        raise HTTPException(status_code=404, detail="cover not found")
+    return FileResponse(candidates[0])
+
+
+@app.delete("/api/covers/{cover_id}")
+def delete_cover(cover_id: str, settings: Settings = Depends(get_settings)) -> dict[str, str]:
+    candidates = list(Path(settings.upload_cover_dir).glob(f"{cover_id}.*"))
+    for f in candidates:
+        f.unlink(missing_ok=True)
+    return {"status": "deleted"}
+
+
 @app.post("/api/projects", response_model=Project)
 def create_project(
     request: CreateProjectRequest,
     db: Session = Depends(get_session),
 ) -> Project:
-    video = get_video(db, request.video_id)
+    if request.video_id:
+        video = get_video(db, request.video_id)
+        video_id = video.video_id
+        video_meta = video.meta
+    else:
+        video_id = None
+        video_meta = None
     project = Project(
         project_id=new_id("prj"),
         name=request.name,
-        video_id=video.video_id,
-        video_meta=video.meta,
+        video_id=video_id,
+        video_meta=video_meta,
     )
     save_project(db, project)
     return project
@@ -245,7 +296,8 @@ def update_project(
     if "cover" in updates:
         update_values["cover"] = request.cover
     if "tracks" in updates and request.tracks is not None:
-        new_duration = update_values.get("video_meta", project.video_meta).duration_sec
+        effective_meta = update_values.get("video_meta", project.video_meta)
+        new_duration = effective_meta.duration_sec if effective_meta else float("inf")
         for track in request.tracks or []:
             if track.video_id is not None:
                 video_overlay = get_video(db, track.video_id)
@@ -286,7 +338,7 @@ def add_track(
             )
     else:
         get_image(db, request.image_id)  # type: ignore[arg-type]
-    if request.end_sec > project.video_meta.duration_sec:
+    if project.video_meta and request.end_sec > project.video_meta.duration_sec:
         raise HTTPException(status_code=422, detail="end_sec exceeds project video duration")
     track = Track(
         id=new_id("trk"),

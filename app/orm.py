@@ -38,8 +38,8 @@ class ProjectRow(Base):
 
     project_id: Mapped[str] = mapped_column(String(64), primary_key=True)
     name: Mapped[str] = mapped_column(String(512))
-    video_id: Mapped[str] = mapped_column(String(64))
-    video_meta: Mapped[dict] = mapped_column(JSON)
+    video_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    video_meta: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     layout: Mapped[dict] = mapped_column(JSON)
     click_sound: Mapped[dict] = mapped_column(JSON)
     tracks: Mapped[list] = mapped_column(JSON, default=list)

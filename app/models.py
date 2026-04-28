@@ -92,11 +92,20 @@ class Cover(BaseModel):
     duration_sec: float = 0.5
 
 
+class CoverRecord(BaseModel):
+    cover_id: str
+    filename: str
+    path: str
+    url: str
+    width: int
+    height: int
+
+
 class Project(BaseModel):
     project_id: str
     name: str
-    video_id: str
-    video_meta: VideoMeta
+    video_id: str | None = None
+    video_meta: VideoMeta | None = None
     layout: Layout = Field(default_factory=Layout)
     click_sound: ClickSound = Field(default_factory=ClickSound)
     tracks: list[Track] = Field(default_factory=list)
@@ -106,7 +115,7 @@ class Project(BaseModel):
 
 
 class CreateProjectRequest(BaseModel):
-    video_id: str
+    video_id: str | None = None
     name: str
 
 
