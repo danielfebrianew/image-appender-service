@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 import asyncio
 from datetime import datetime, timezone
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from fastapi import WebSocket
 
 from app.ids import new_id
 from app.models import JobState, JobStatus
+
+if TYPE_CHECKING:
+    from app.models import Project
 
 
 class JobManager:
@@ -14,8 +19,8 @@ class JobManager:
         self.websockets: dict[str, set[WebSocket]] = {}
         self.lock = asyncio.Lock()
 
-    async def create(self, project_id: str) -> JobState:
-        job = JobState(job_id=new_id("job"), project_id=project_id)
+    async def create(self, project: "Project") -> JobState:
+        job = JobState(job_id=new_id("job"), project=project)
         async with self.lock:
             self.jobs[job.job_id] = job
         return job

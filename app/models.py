@@ -171,7 +171,11 @@ class PreviewRequest(BaseModel):
 
 
 class RenderRequest(BaseModel):
-    project_id: str
+    video_id: str
+    cover_id: str | None = None
+    tracks: list[Track] = Field(default_factory=list)
+    layout: Layout = Field(default_factory=Layout)
+    click_sound: ClickSound = Field(default_factory=ClickSound)
 
 
 class JobStatus(str, Enum):
@@ -183,7 +187,7 @@ class JobStatus(str, Enum):
 
 class JobState(BaseModel):
     job_id: str
-    project_id: str
+    project: "Project | None" = None
     status: JobStatus = JobStatus.queued
     progress: float = 0.0
     eta_sec: float | None = None

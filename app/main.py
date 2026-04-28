@@ -427,8 +427,26 @@ async def start_render(
     settings: Settings = Depends(get_settings),
     db: Session = Depends(get_session),
 ) -> dict[str, str]:
-    get_project(db, request.project_id)
-    job = await job_manager.create(request.project_id)
+    video = get_video(db, request.video_id)
+
+    cover: Cover | None = None
+    if request.cover_id:
+        candidates = list(Path(settings.upload_cover_dir).glob(f"{request.cover_id}.*"))
+        if candidates:
+            width, height = inspect_image(candidates[0])
+            cover = Cover(path=str(candidates[0]), filename=candidates[0].name, width=width, height=height)
+
+    project = Project(
+        project_id=new_id("prj"),
+        name="render",
+        video_id=video.video_id,
+        video_meta=video.meta,
+        layout=request.layout,
+        click_sound=request.click_sound,
+        tracks=request.tracks,
+        cover=cover,
+    )
+    job = await job_manager.create(project)
     background_tasks.add_task(run_render_job, settings, job_manager, job.job_id)
     return {"job_id": job.job_id, "status": job.status.value}
 

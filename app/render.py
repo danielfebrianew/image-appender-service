@@ -4,10 +4,13 @@ import shlex
 from dataclasses import dataclass
 from pathlib import Path
 
+from sqlalchemy.orm import Session
+
 from app.config import Settings
+from app.db import make_session
 from app.jobs import JobManager
 from app.models import FitMode, JobStatus, Project, Track
-from app.storage import get_image, get_project, get_video
+from app.storage import get_image, get_video
 
 
 def ffmpeg_time_escape(value: float) -> str:
@@ -187,6 +190,7 @@ async def render_copy_segment(
 async def render_overlay_segment(
     settings: Settings, source: Path, seg: Segment, project: Project,
     out: Path, manager: JobManager, job_id: str, total_duration: float,
+    db: Session | None = None,
 ) -> int:
     width = project.video_meta.width
     height = project.video_meta.height
@@ -212,7 +216,7 @@ async def render_overlay_segment(
 
     for track in seg.tracks:
         if track.video_id is not None:
-            video_overlay = get_video(settings, track.video_id)
+            video_overlay = get_video(db, track.video_id)  # type: ignore[arg-type]
             # trim_start_sec = offset into the overlay video where this segment starts
             # seg.start - track.start_sec = how far into the track this segment is
             trim_offset = track.trim_start_sec + (seg.start - track.start_sec)
@@ -222,7 +226,7 @@ async def render_overlay_segment(
                 "-i", str(video_overlay.path),
             ])
         else:
-            image = get_image(settings, track.image_id)  # type: ignore[arg-type]
+            image = get_image(db, track.image_id)  # type: ignore[arg-type]
             args.extend(["-loop", "1", "-t", ffmpeg_time_escape(dur), "-i", str(image.path)])
 
     if use_click:
@@ -295,9 +299,13 @@ async def run_render_job(settings: Settings, manager: JobManager, job_id: str) -
     tmp_dir = settings.tmp_dir / job_id
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
+    db = make_session()
     try:
-        project = get_project(settings, job.project_id)
-        await validate_project_assets(settings, project, manager, job_id)
+        project = job.project
+        if project is None:
+            await manager.fail(job_id, "job has no project data")
+            return
+        await validate_project_assets(project, manager, job_id, db)
 
         source = Path(project.video_meta.path)
         duration = project.video_meta.duration_sec
@@ -355,7 +363,7 @@ async def run_render_job(settings: Settings, manager: JobManager, job_id: str) -
             await manager.log(job_id, f"Segment {i+1}/{len(segments)}: {seg.start:.2f}s–{seg.end:.2f}s ({'overlay' if seg.tracks else 'copy'})")
 
             if seg.tracks:
-                code = await render_overlay_segment(settings, source, seg, project, seg_out, manager, job_id, duration)
+                code = await render_overlay_segment(settings, source, seg, project, seg_out, manager, job_id, duration, db)
             else:
                 code = await render_copy_segment(settings, source, seg, seg_out, manager, job_id, duration)
 
@@ -392,18 +400,18 @@ async def run_render_job(settings: Settings, manager: JobManager, job_id: str) -
     except Exception as exc:
         await manager.fail(job_id, str(exc))
     finally:
-        # Cleanup temp segments
+        db.close()
         import shutil
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
 async def validate_project_assets(
-    settings: Settings, project: Project, manager: JobManager, job_id: str
+    project: Project, manager: JobManager, job_id: str, db: Session,
 ) -> None:
     seen_end = -1.0
     for track in project.tracks:
         if track.video_id is not None:
-            video_overlay = get_video(settings, track.video_id)
+            video_overlay = get_video(db, track.video_id)
             clip_duration = track.end_sec - track.start_sec
             if track.trim_start_sec + clip_duration > video_overlay.meta.duration_sec:
                 await manager.log(
@@ -413,7 +421,7 @@ async def validate_project_assets(
                     "warn",
                 )
         else:
-            get_image(settings, track.image_id)  # type: ignore[arg-type]
+            get_image(db, track.image_id)  # type: ignore[arg-type]
         if track.start_sec < seen_end:
             await manager.log(job_id, "Track overlap detected; later tracks render above earlier tracks.", "warn")
         if track.end_sec > project.video_meta.duration_sec:
