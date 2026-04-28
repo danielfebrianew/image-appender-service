@@ -1,83 +1,5 @@
 [
   {
-    "video_id": "vid_80f510b132cf",
-    "filename": "Metode_Motivasi_Arteta_Pake_Lampu_Disindir_Koci_Arteta_CoachJustin_Arsenal.mp4",
-    "path": "data/uploads/videos/vid_80f510b132cf.mp4",
-    "meta": {
-      "path": "data/uploads/videos/vid_80f510b132cf.mp4",
-      "duration_sec": 45.0,
-      "width": 606,
-      "height": 1080,
-      "fps": 60.0
-    },
-    "created_at": "2026-04-27T03:56:49.770681Z"
-  },
-  {
-    "video_id": "vid_a2b413b5805c",
-    "filename": "Coach_Justin_Tetap_Gak_Percaya_Arsenal_Juara_CoachJustin_Arsenal_EPL.mp4",
-    "path": "data/uploads/videos/vid_a2b413b5805c.mp4",
-    "meta": {
-      "path": "data/uploads/videos/vid_a2b413b5805c.mp4",
-      "duration_sec": 45.0,
-      "width": 606,
-      "height": 1080,
-      "fps": 60.0
-    },
-    "created_at": "2026-04-27T06:07:31.683642Z"
-  },
-  {
-    "video_id": "vid_63a1984e7c23",
-    "filename": "Tips_awet_muda_ala_Coach_Justin_Yang_penting_Happy_Humor_CoachJustin_Happiness_Podcast.mp4",
-    "path": "data/uploads/videos/vid_63a1984e7c23.mp4",
-    "meta": {
-      "path": "data/uploads/videos/vid_63a1984e7c23.mp4",
-      "duration_sec": 29.0,
-      "width": 606,
-      "height": 1080,
-      "fps": 50.0
-    },
-    "created_at": "2026-04-27T06:07:49.452204Z"
-  },
-  {
-    "video_id": "vid_f2765f2f816a",
-    "filename": "Coach_Justin_Tetap_Gak_Percaya_Arsenal_Juara_CoachJustin_Arsenal_EPL.mp4",
-    "path": "data/uploads/videos/vid_f2765f2f816a.mp4",
-    "meta": {
-      "path": "data/uploads/videos/vid_f2765f2f816a.mp4",
-      "duration_sec": 40.991992,
-      "width": 606,
-      "height": 1080,
-      "fps": 60.0
-    },
-    "created_at": "2026-04-27T06:10:40.391582Z"
-  },
-  {
-    "video_id": "vid_ea955c5e3c7d",
-    "filename": "Messi_lahir_di_Indonesia_bakal_jadi_apa_Ini_opini_jujur_Pange_Coach_Justin_Messi_TimnasIndonesia_Sep.mp4",
-    "path": "data/uploads/videos/vid_ea955c5e3c7d.mp4",
-    "meta": {
-      "path": "data/uploads/videos/vid_ea955c5e3c7d.mp4",
-      "duration_sec": 34.0,
-      "width": 606,
-      "height": 1080,
-      "fps": 60.0
-    },
-    "created_at": "2026-04-27T06:50:02.356095Z"
-  },
-  {
-    "video_id": "vid_3bb5737b0c3b",
-    "filename": "Kaka_vs_Ronaldo_Messi_Apa_yang_kurang_Coach_Justin_bicara_jujur_Kaka_ACMilan_Ronaldo_Messi.mp4",
-    "path": "data/uploads/videos/vid_3bb5737b0c3b.mp4",
-    "meta": {
-      "path": "data/uploads/videos/vid_3bb5737b0c3b.mp4",
-      "duration_sec": 26.000304,
-      "width": 606,
-      "height": 1080,
-      "fps": 59.99929743884525
-    },
-    "created_at": "2026-04-27T12:59:32.521494Z"
-  },
-  {
     "video_id": "vid_4cf5b9702ab5",
     "filename": "Kaka_vs_Ronaldo_Messi_Apa_yang_kurang_Coach_Justin_bicara_jujur_Kaka_ACMilan_Ronaldo_Messi.mp4",
     "path": "data/uploads/videos/vid_4cf5b9702ab5.mp4",
@@ -141,5 +63,70 @@
       "fps": 59.999606040709125
     },
     "created_at": "2026-04-27T14:47:03.532285Z"
+  },
+  {
+    "video_id": "vid_b6546fc9e7b5",
+    "filename": "Dokter_Tirta_bongkar_rahasia_Masuk_Angin_Ternyata_ini_yang_terjadi_di_tubuh_kita_DrTirta_MasukAngin_.mp4",
+    "path": "data/uploads/videos/vid_b6546fc9e7b5.mp4",
+    "meta": {
+      "path": "data/uploads/videos/vid_b6546fc9e7b5.mp4",
+      "duration_sec": 57.0,
+      "width": 606,
+      "height": 1080,
+      "fps": 25.0
+    },
+    "created_at": "2026-04-27T18:22:15.057924Z"
+  },
+  {
+    "video_id": "vid_552160d33267",
+    "filename": "Doku_Saka_Coach_Justin_mulai_berulah_lagi_nih_Saka_Doku_Arsenal_ManCity_Banter.mp4",
+    "path": "data/uploads/videos/vid_552160d33267.mp4",
+    "meta": {
+      "path": "data/uploads/videos/vid_552160d33267.mp4",
+      "duration_sec": 20.0,
+      "width": 606,
+      "height": 1080,
+      "fps": 60.0
+    },
+    "created_at": "2026-04-27T18:40:03.825349Z"
+  },
+  {
+    "video_id": "vid_cc09e4efed25",
+    "filename": "Terbongkar_alasan_Coach_Justin_block_Instagram_Dr_Tirta_Ternyata_gara_gara_ini_Unblocked_CoachJustin.mp4",
+    "path": "data/uploads/videos/vid_cc09e4efed25.mp4",
+    "meta": {
+      "path": "data/uploads/videos/vid_cc09e4efed25.mp4",
+      "duration_sec": 37.0,
+      "width": 606,
+      "height": 1080,
+      "fps": 25.0
+    },
+    "created_at": "2026-04-27T20:26:07.060490Z"
+  },
+  {
+    "video_id": "vid_4c11ccba476c",
+    "filename": "Keluarga_Dokter_tapi_Coach_Justin_anti_minum_obat_Dokter_Tirta_malah_setuju_CoachJustin_DrTirta_Tips.mp4",
+    "path": "data/uploads/videos/vid_4c11ccba476c.mp4",
+    "meta": {
+      "path": "data/uploads/videos/vid_4c11ccba476c.mp4",
+      "duration_sec": 44.0,
+      "width": 606,
+      "height": 1080,
+      "fps": 25.0
+    },
+    "created_at": "2026-04-27T20:39:20.574351Z"
+  },
+  {
+    "video_id": "vid_61e6b1f61042",
+    "filename": "Prinsip_Coach_Justin_Sepak_bola_itu_harus_main_bagus_DAN_juara_Bukan_milih_salah_satu_CoachJustin_Fi.mp4",
+    "path": "data/uploads/videos/vid_61e6b1f61042.mp4",
+    "meta": {
+      "path": "data/uploads/videos/vid_61e6b1f61042.mp4",
+      "duration_sec": 30.0,
+      "width": 606,
+      "height": 1080,
+      "fps": 50.0
+    },
+    "created_at": "2026-04-27T20:49:04.286309Z"
   }
 ]

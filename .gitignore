@@ -1,5 +1,6 @@
 # Python
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *.pyo
 *.pyd
@@ -7,6 +8,13 @@ __pycache__/
 dist/
 build/
 *.egg
+
+# Pytest
+.pytest_cache/
+**/.pytest_cache/
+.coverage
+htmlcov/
+pytest_cache/
 
 # Virtual environments
 image-appender-env/

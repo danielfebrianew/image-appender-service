@@ -15,8 +15,10 @@ from fastapi import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
+from sqlalchemy.orm import Session
 
 from app.config import Settings, get_settings
+from app.db import get_session, init_db
 from app.ids import new_id
 from app.jobs import job_manager
 from app.media import (
@@ -43,24 +45,27 @@ from app.models import (
 from app.render import run_render_job
 from app.storage import (
     copy_registered_file,
+    delete_video_row,
     get_image,
     get_project,
     get_video,
     list_images,
     list_projects,
     list_videos,
-    save_images,
+    save_image,
     save_project,
     save_upload,
-    save_videos,
+    save_video,
 )
 
+_settings = get_settings()
+init_db(_settings.db_url)
+
 app = FastAPI(title="ContextClipper Backend", version="0.1.0")
-settings = get_settings()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origin_list,
+    allow_origins=_settings.cors_origin_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -82,6 +87,7 @@ async def upload_video(
     path: str | None = Form(default=None),
     filename: str | None = Form(default=None),
     settings: Settings = Depends(get_settings),
+    db: Session = Depends(get_session),
 ) -> VideoRecord:
     if file is None and path is None:
         raise HTTPException(status_code=400, detail="send multipart file or path form field")
@@ -104,28 +110,26 @@ async def upload_video(
         path=str(destination),
         meta=meta.model_copy(update={"path": str(destination)}),
     )
-    records = list_videos(settings)
-    records.append(record)
-    save_videos(settings, records)
+    save_video(db, record)
     return record
 
 
 @app.get("/api/videos", response_model=list[VideoRecord])
-def videos(settings: Settings = Depends(get_settings)) -> list[VideoRecord]:
-    return list_videos(settings)
+def videos(db: Session = Depends(get_session)) -> list[VideoRecord]:
+    return list_videos(db)
 
 
 @app.get("/api/videos/{video_id}/stream")
-def video_stream(video_id: str, settings: Settings = Depends(get_settings)) -> FileResponse:
-    video = get_video(settings, video_id)
+def video_stream(video_id: str, db: Session = Depends(get_session)) -> FileResponse:
+    video = get_video(db, video_id)
     return FileResponse(video.path, media_type="video/mp4")
 
 
 @app.get("/api/videos/{video_id}/thumbnail")
 def video_thumbnail(
-    video_id: str, t: float = 2.5, settings: Settings = Depends(get_settings)
+    video_id: str, t: float = 2.5, db: Session = Depends(get_session)
 ) -> Response:
-    video = get_video(settings, video_id)
+    video = get_video(db, video_id)
     ok, frame = extract_video_frame(Path(video.path), t)
     if not ok:
         raise HTTPException(status_code=400, detail="could not extract thumbnail")
@@ -133,17 +137,13 @@ def video_thumbnail(
 
 
 @app.delete("/api/videos/{video_id}")
-def delete_video(video_id: str, settings: Settings = Depends(get_settings)) -> dict[str, str]:
-    records = list_videos(settings)
-    for idx, record in enumerate(records):
-        if record.video_id == video_id:
-            path = Path(record.path)
-            if path.exists():
-                path.unlink(missing_ok=True)
-            records.pop(idx)
-            save_videos(settings, records)
-            return {"status": "deleted"}
-    raise HTTPException(status_code=404, detail="video not found")
+def delete_video(video_id: str, db: Session = Depends(get_session)) -> dict[str, str]:
+    video = get_video(db, video_id)
+    path = Path(video.path)
+    if path.exists():
+        path.unlink(missing_ok=True)
+    delete_video_row(db, video_id)
+    return {"status": "deleted"}
 
 
 @app.post("/api/images", response_model=ImageRecord)
@@ -151,6 +151,7 @@ async def upload_image(
     file: UploadFile | None = File(default=None),
     base64_image: str | None = Form(default=None),
     settings: Settings = Depends(get_settings),
+    db: Session = Depends(get_session),
 ) -> ImageRecord:
     if file is None and not base64_image:
         raise HTTPException(status_code=400, detail="send multipart file or base64_image form field")
@@ -172,73 +173,69 @@ async def upload_image(
         width=width,
         height=height,
     )
-    records = list_images(settings, include_deleted=True)
-    records.append(record)
-    save_images(settings, records)
+    save_image(db, record)
     return record
 
 
 @app.get("/api/images", response_model=list[ImageRecord])
-def images(settings: Settings = Depends(get_settings)) -> list[ImageRecord]:
-    return list_images(settings)
+def images(db: Session = Depends(get_session)) -> list[ImageRecord]:
+    return list_images(db)
 
 
 @app.get("/api/images/{image_id}")
-def image_file(image_id: str, settings: Settings = Depends(get_settings)) -> FileResponse:
-    image = get_image(settings, image_id)
+def image_file(image_id: str, db: Session = Depends(get_session)) -> FileResponse:
+    image = get_image(db, image_id)
     return FileResponse(image.path)
 
 
 @app.delete("/api/images/{image_id}")
-def delete_image(image_id: str, settings: Settings = Depends(get_settings)) -> dict[str, str]:
-    records = list_images(settings, include_deleted=True)
-    for idx, record in enumerate(records):
-        if record.image_id == image_id:
-            records[idx] = record.model_copy(update={"deleted": True})
-            save_images(settings, records)
-            return {"status": "deleted"}
-    raise HTTPException(status_code=404, detail="image not found")
+def delete_image(image_id: str, db: Session = Depends(get_session)) -> dict[str, str]:
+    record = get_image(db, image_id, include_deleted=True)
+    updated = record.model_copy(update={"deleted": True})
+    save_image(db, updated)
+    return {"status": "deleted"}
 
 
 @app.post("/api/projects", response_model=Project)
 def create_project(
-    request: CreateProjectRequest, settings: Settings = Depends(get_settings)
+    request: CreateProjectRequest,
+    db: Session = Depends(get_session),
 ) -> Project:
-    video = get_video(settings, request.video_id)
+    video = get_video(db, request.video_id)
     project = Project(
         project_id=new_id("prj"),
         name=request.name,
         video_id=video.video_id,
         video_meta=video.meta,
     )
-    save_project(settings, project)
+    save_project(db, project)
     return project
 
 
 @app.get("/api/projects", response_model=list[Project])
-def projects(settings: Settings = Depends(get_settings)) -> list[Project]:
-    return list_projects(settings)
+def projects(db: Session = Depends(get_session)) -> list[Project]:
+    return list_projects(db)
 
 
 @app.get("/api/projects/{project_id}", response_model=Project)
-def project(project_id: str, settings: Settings = Depends(get_settings)) -> Project:
-    return get_project(settings, project_id)
+def project(project_id: str, db: Session = Depends(get_session)) -> Project:
+    return get_project(db, project_id)
 
 
 @app.put("/api/projects/{project_id}", response_model=Project)
 def update_project(
     project_id: str,
     request: UpdateProjectRequest,
-    settings: Settings = Depends(get_settings),
+    db: Session = Depends(get_session),
 ) -> Project:
-    project = get_project(settings, project_id)
+    project = get_project(db, project_id)
     updates = request.model_dump(exclude_unset=True)
     update_values = {}
 
     if "name" in updates:
         update_values["name"] = request.name
     if "video_id" in updates and request.video_id:
-        video = get_video(settings, request.video_id)
+        video = get_video(db, request.video_id)
         update_values["video_id"] = video.video_id
         update_values["video_meta"] = video.meta
     if "layout" in updates:
@@ -248,12 +245,10 @@ def update_project(
     if "cover" in updates:
         update_values["cover"] = request.cover
     if "tracks" in updates and request.tracks is not None:
-        new_duration = (
-            update_values.get("video_meta", project.video_meta).duration_sec
-        )
+        new_duration = update_values.get("video_meta", project.video_meta).duration_sec
         for track in request.tracks or []:
             if track.video_id is not None:
-                video_overlay = get_video(settings, track.video_id)
+                video_overlay = get_video(db, track.video_id)
                 clip_duration = track.end_sec - track.start_sec
                 if track.trim_start_sec + clip_duration > video_overlay.meta.duration_sec:
                     raise HTTPException(
@@ -261,7 +256,7 @@ def update_project(
                         detail=f"track {track.id} trim_start_sec + clip duration exceeds overlay video duration",
                     )
             elif track.image_id is not None:
-                get_image(settings, track.image_id)
+                get_image(db, track.image_id)
             if track.end_sec > new_duration:
                 raise HTTPException(
                     status_code=422,
@@ -270,7 +265,7 @@ def update_project(
         update_values["tracks"] = request.tracks
 
     updated = project.model_copy(update={**update_values, "updated_at": utc_now()})
-    save_project(settings, updated)
+    save_project(db, updated)
     return updated
 
 
@@ -278,11 +273,11 @@ def update_project(
 def add_track(
     project_id: str,
     request: AddTrackRequest,
-    settings: Settings = Depends(get_settings),
+    db: Session = Depends(get_session),
 ) -> Project:
-    project = get_project(settings, project_id)
+    project = get_project(db, project_id)
     if request.video_id is not None:
-        video_overlay = get_video(settings, request.video_id)
+        video_overlay = get_video(db, request.video_id)
         clip_duration = request.end_sec - request.start_sec
         if request.trim_start_sec + clip_duration > video_overlay.meta.duration_sec:
             raise HTTPException(
@@ -290,12 +285,9 @@ def add_track(
                 detail="trim_start_sec + clip duration exceeds overlay video duration",
             )
     else:
-        get_image(settings, request.image_id)  # type: ignore[arg-type]
+        get_image(db, request.image_id)  # type: ignore[arg-type]
     if request.end_sec > project.video_meta.duration_sec:
-        raise HTTPException(
-            status_code=422,
-            detail="end_sec exceeds project video duration",
-        )
+        raise HTTPException(status_code=422, detail="end_sec exceeds project video duration")
     track = Track(
         id=new_id("trk"),
         image_id=request.image_id,
@@ -308,7 +300,7 @@ def add_track(
     updated = project.model_copy(
         update={"tracks": [*project.tracks, track], "updated_at": utc_now()}
     )
-    save_project(settings, updated)
+    save_project(db, updated)
     return updated
 
 
@@ -318,8 +310,9 @@ async def upload_project_cover(
     file: UploadFile | None = File(default=None),
     base64_image: str | None = Form(default=None),
     settings: Settings = Depends(get_settings),
+    db: Session = Depends(get_session),
 ) -> Project:
-    project = get_project(settings, project_id)
+    project = get_project(db, project_id)
     if file is None and not base64_image:
         raise HTTPException(status_code=400, detail="send multipart file or base64_image form field")
 
@@ -337,45 +330,40 @@ async def upload_project_cover(
         display_name = destination.name
 
     width, height = inspect_image(destination)
-    cover = Cover(
-        path=str(destination),
-        filename=display_name,
-        width=width,
-        height=height,
-    )
+    cover = Cover(path=str(destination), filename=display_name, width=width, height=height)
     updated = project.model_copy(update={"cover": cover, "updated_at": utc_now()})
-    save_project(settings, updated)
+    save_project(db, updated)
     return updated
 
 
 @app.delete("/api/projects/{project_id}/cover", response_model=Project)
 def delete_project_cover(
-    project_id: str, settings: Settings = Depends(get_settings)
+    project_id: str, db: Session = Depends(get_session)
 ) -> Project:
-    project = get_project(settings, project_id)
+    project = get_project(db, project_id)
     if project.cover:
         old_path = Path(project.cover.path)
         if old_path.exists():
             old_path.unlink(missing_ok=True)
     updated = project.model_copy(update={"cover": None, "updated_at": utc_now()})
-    save_project(settings, updated)
+    save_project(db, updated)
     return updated
 
 
 @app.get("/api/projects/{project_id}/cover")
 def project_cover_file(
-    project_id: str, settings: Settings = Depends(get_settings)
+    project_id: str, db: Session = Depends(get_session)
 ) -> FileResponse:
-    project = get_project(settings, project_id)
+    project = get_project(db, project_id)
     if not project.cover:
         raise HTTPException(status_code=404, detail="cover not set")
     return FileResponse(project.cover.path)
 
 
 @app.post("/api/preview")
-def preview(request: PreviewRequest, settings: Settings = Depends(get_settings)) -> Response:
-    video = get_video(settings, request.video_id)
-    image = get_image(settings, request.overlay.image_id)
+def preview(request: PreviewRequest, db: Session = Depends(get_session)) -> Response:
+    video = get_video(db, request.video_id)
+    image = get_image(db, request.overlay.image_id)
     jpeg = make_preview(Path(video.path), Path(image.path), request.timestamp, request.overlay.fit)
     return Response(content=jpeg, media_type="image/jpeg")
 
@@ -385,8 +373,9 @@ async def start_render(
     request: RenderRequest,
     background_tasks: BackgroundTasks,
     settings: Settings = Depends(get_settings),
+    db: Session = Depends(get_session),
 ) -> dict[str, str]:
-    get_project(settings, request.project_id)
+    get_project(db, request.project_id)
     job = await job_manager.create(request.project_id)
     background_tasks.add_task(run_render_job, settings, job_manager, job.job_id)
     return {"job_id": job.job_id, "status": job.status.value}

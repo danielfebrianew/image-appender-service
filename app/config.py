@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     data_dir: Path = Field(default=Path("./data"), alias="CONTEXTCLIPPER_DATA_DIR")
+    db_url: str = Field(
+        default="mysql+pymysql://root@localhost:3306/image_appender_db",
+        alias="CONTEXTCLIPPER_DB_URL",
+    )
     ffmpeg_path: str = Field(default="ffmpeg", alias="CONTEXTCLIPPER_FFMPEG_PATH")
     ffprobe_path: str = Field(default="ffprobe", alias="CONTEXTCLIPPER_FFPROBE_PATH")
     video_codec: str = Field(default="h264_videotoolbox", alias="CONTEXTCLIPPER_VIDEO_CODEC")

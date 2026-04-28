@@ -1,20 +1,13 @@
-import json
 import shutil
 from pathlib import Path
-from collections.abc import Sequence
-from typing import TypeVar
 
 import aiofiles
 from fastapi import HTTPException, UploadFile, status
-from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
-from app.config import Settings
 from app.ids import new_id
 from app.models import ImageRecord, Project, VideoRecord
-
-VIDEO_INDEX = "videos.json"
-IMAGE_INDEX = "images.json"
-T = TypeVar("T", bound=BaseModel)
+from app.orm import ImageRow, ProjectRow, VideoRow
 
 
 def safe_suffix(filename: str | None, default: str = ".bin") -> str:
@@ -24,79 +17,166 @@ def safe_suffix(filename: str | None, default: str = ".bin") -> str:
     return suffix or default
 
 
-def read_json(path: Path, default):
-    if not path.exists():
-        return default
-    with path.open("r", encoding="utf-8") as f:
-        return json.load(f)
+# ── Images ────────────────────────────────────────────────────────────────────
+
+def list_images(db: Session, include_deleted: bool = False) -> list[ImageRecord]:
+    query = db.query(ImageRow)
+    if not include_deleted:
+        query = query.filter(ImageRow.deleted == False)  # noqa: E712
+    return [_image_from_row(row) for row in query.order_by(ImageRow.created_at).all()]
 
 
-def write_json(path: Path, data) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    with tmp.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-    tmp.replace(path)
+def get_image(db: Session, image_id: str, include_deleted: bool = False) -> ImageRecord:
+    query = db.query(ImageRow).filter(ImageRow.image_id == image_id)
+    if not include_deleted:
+        query = query.filter(ImageRow.deleted == False)  # noqa: E712
+    row = query.first()
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="image not found")
+    return _image_from_row(row)
 
 
-def load_records(settings: Settings, filename: str, model: type[T]) -> list[T]:
-    return [model.model_validate(item) for item in read_json(settings.data_dir / filename, [])]
+def save_image(db: Session, record: ImageRecord) -> None:
+    row = db.get(ImageRow, record.image_id)
+    if row is None:
+        row = ImageRow(
+            image_id=record.image_id,
+            filename=record.filename,
+            path=record.path,
+            url=record.url,
+            width=record.width,
+            height=record.height,
+            deleted=record.deleted,
+            created_at=record.created_at,
+        )
+        db.add(row)
+    else:
+        row.filename = record.filename
+        row.path = record.path
+        row.url = record.url
+        row.width = record.width
+        row.height = record.height
+        row.deleted = record.deleted
+    db.commit()
 
 
-def save_records(settings: Settings, filename: str, records: Sequence[BaseModel]) -> None:
-    write_json(settings.data_dir / filename, [record.model_dump(mode="json") for record in records])
+def _image_from_row(row: ImageRow) -> ImageRecord:
+    return ImageRecord(
+        image_id=row.image_id,
+        filename=row.filename,
+        path=row.path,
+        url=row.url,
+        width=row.width,
+        height=row.height,
+        deleted=row.deleted,
+        created_at=row.created_at,
+    )
 
 
-def list_videos(settings: Settings) -> list[VideoRecord]:
-    return load_records(settings, VIDEO_INDEX, VideoRecord)
+# ── Videos ────────────────────────────────────────────────────────────────────
+
+def list_videos(db: Session) -> list[VideoRecord]:
+    return [_video_from_row(row) for row in db.query(VideoRow).order_by(VideoRow.created_at).all()]
 
 
-def save_videos(settings: Settings, records: list[VideoRecord]) -> None:
-    save_records(settings, VIDEO_INDEX, records)
+def get_video(db: Session, video_id: str) -> VideoRecord:
+    row = db.get(VideoRow, video_id)
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="video not found")
+    return _video_from_row(row)
 
 
-def get_video(settings: Settings, video_id: str) -> VideoRecord:
-    for record in list_videos(settings):
-        if record.video_id == video_id:
-            return record
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="video not found")
+def save_video(db: Session, record: VideoRecord) -> None:
+    row = db.get(VideoRow, record.video_id)
+    if row is None:
+        row = VideoRow(
+            video_id=record.video_id,
+            filename=record.filename,
+            path=record.path,
+            meta=record.meta.model_dump(mode="json"),
+            created_at=record.created_at,
+        )
+        db.add(row)
+    else:
+        row.filename = record.filename
+        row.path = record.path
+        row.meta = record.meta.model_dump(mode="json")
+    db.commit()
 
 
-def list_images(settings: Settings, include_deleted: bool = False) -> list[ImageRecord]:
-    records = load_records(settings, IMAGE_INDEX, ImageRecord)
-    if include_deleted:
-        return records
-    return [record for record in records if not record.deleted]
+def delete_video_row(db: Session, video_id: str) -> None:
+    row = db.get(VideoRow, video_id)
+    if row:
+        db.delete(row)
+        db.commit()
 
 
-def save_images(settings: Settings, records: list[ImageRecord]) -> None:
-    save_records(settings, IMAGE_INDEX, records)
+def _video_from_row(row: VideoRow) -> VideoRecord:
+    return VideoRecord.model_validate(
+        {"video_id": row.video_id, "filename": row.filename, "path": row.path, "meta": row.meta, "created_at": row.created_at}
+    )
 
 
-def get_image(settings: Settings, image_id: str, include_deleted: bool = False) -> ImageRecord:
-    for record in list_images(settings, include_deleted=include_deleted):
-        if record.image_id == image_id:
-            return record
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="image not found")
+# ── Projects ──────────────────────────────────────────────────────────────────
+
+def list_projects(db: Session) -> list[Project]:
+    return [_project_from_row(row) for row in db.query(ProjectRow).order_by(ProjectRow.created_at).all()]
 
 
-def list_projects(settings: Settings) -> list[Project]:
-    projects = []
-    for path in sorted(settings.project_dir.glob("*.json")):
-        projects.append(Project.model_validate(read_json(path, {})))
-    return projects
-
-
-def get_project(settings: Settings, project_id: str) -> Project:
-    path = settings.project_dir / f"{project_id}.json"
-    if not path.exists():
+def get_project(db: Session, project_id: str) -> Project:
+    row = db.get(ProjectRow, project_id)
+    if not row:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="project not found")
-    return Project.model_validate(read_json(path, {}))
+    return _project_from_row(row)
 
 
-def save_project(settings: Settings, project: Project) -> None:
-    write_json(settings.project_dir / f"{project.project_id}.json", project.model_dump(mode="json"))
+def save_project(db: Session, project: Project) -> None:
+    row = db.get(ProjectRow, project.project_id)
+    data = project.model_dump(mode="json")
+    if row is None:
+        row = ProjectRow(
+            project_id=data["project_id"],
+            name=data["name"],
+            video_id=data["video_id"],
+            video_meta=data["video_meta"],
+            layout=data["layout"],
+            click_sound=data["click_sound"],
+            tracks=data["tracks"],
+            cover=data.get("cover"),
+            created_at=project.created_at,
+            updated_at=project.updated_at,
+        )
+        db.add(row)
+    else:
+        row.name = data["name"]
+        row.video_id = data["video_id"]
+        row.video_meta = data["video_meta"]
+        row.layout = data["layout"]
+        row.click_sound = data["click_sound"]
+        row.tracks = data["tracks"]
+        row.cover = data.get("cover")
+        row.updated_at = project.updated_at
+    db.commit()
 
+
+def _project_from_row(row: ProjectRow) -> Project:
+    return Project.model_validate(
+        {
+            "project_id": row.project_id,
+            "name": row.name,
+            "video_id": row.video_id,
+            "video_meta": row.video_meta,
+            "layout": row.layout,
+            "click_sound": row.click_sound,
+            "tracks": row.tracks,
+            "cover": row.cover,
+            "created_at": row.created_at,
+            "updated_at": row.updated_at,
+        }
+    )
+
+
+# ── File helpers ──────────────────────────────────────────────────────────────
 
 async def save_upload(upload: UploadFile, directory: Path, prefix: str) -> tuple[str, Path]:
     item_id = new_id(prefix)
