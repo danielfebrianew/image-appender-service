@@ -41,10 +41,6 @@ class Settings(BaseSettings):
         return self.data_dir / "uploads" / "covers"
 
     @property
-    def project_dir(self) -> Path:
-        return self.data_dir / "projects"
-
-    @property
     def output_dir(self) -> Path:
         return self.data_dir / "outputs"
 
@@ -61,7 +57,6 @@ class Settings(BaseSettings):
             self.upload_video_dir,
             self.upload_image_dir,
             self.upload_cover_dir,
-            self.project_dir,
             self.output_dir,
             self.tmp_dir,
         ]:
